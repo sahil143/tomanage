@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "tomanage",
+    "name": "toManage",
     "slug": "tomanage",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "25adf2a4-d07d-4b97-86dd-2a82655834df"
+      }
+    },
+    "owner": "tomanageorg"
   }
 }

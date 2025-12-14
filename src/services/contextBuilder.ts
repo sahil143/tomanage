@@ -12,6 +12,13 @@ import {
   ContextType,
 } from '../types/todo';
 import { UserContext, createUserContext } from '../types/chat';
+import {
+  ENERGY_KEYWORDS,
+  CONTEXT_KEYWORDS,
+  DURATION_PATTERNS,
+  WORK_SCHEDULE,
+  DEFAULTS,
+} from '../utils/constants';
 
 interface WorkloadAnalysis {
   totalIncompleteTasks: number;
@@ -113,50 +120,14 @@ class ContextBuilder {
   inferEnergyLevel(todo: Todo): EnergyLevel {
     const text = `${todo.title} ${todo.description || ''}`.toLowerCase();
 
-    // High energy keywords
-    const highEnergyKeywords = [
-      'implement',
-      'architecture',
-      'design',
-      'refactor',
-      'optimize',
-      'complex',
-      'investigate',
-      'debug',
-      'research',
-      'build',
-      'create',
-      'develop',
-      'algorithm',
-      'system',
-    ];
-
-    // Low energy keywords
-    const lowEnergyKeywords = [
-      'review',
-      'update',
-      'organize',
-      'schedule',
-      'reply',
-      'read',
-      'check',
-      'quick',
-      'simple',
-      'easy',
-      'delete',
-      'cleanup',
-      'format',
-      'typo',
-    ];
-
     let highCount = 0;
     let lowCount = 0;
 
-    highEnergyKeywords.forEach((keyword) => {
+    ENERGY_KEYWORDS.high.forEach((keyword) => {
       if (text.includes(keyword)) highCount++;
     });
 
-    lowEnergyKeywords.forEach((keyword) => {
+    ENERGY_KEYWORDS.low.forEach((keyword) => {
       if (text.includes(keyword)) lowCount++;
     });
 
@@ -168,7 +139,7 @@ class ContextBuilder {
     }
 
     // Default to medium if unclear or equal
-    return 'medium';
+    return DEFAULTS.ENERGY_LEVEL;
   }
 
   /**
@@ -178,97 +149,8 @@ class ContextBuilder {
     const text =
       `${todo.title} ${todo.description || ''} ${todo.tags.join(' ')}`.toLowerCase();
 
-    const contextKeywords: Record<ContextType, string[]> = {
-      frontend: [
-        'react',
-        'ui',
-        'frontend',
-        'component',
-        'css',
-        'html',
-        'style',
-        'view',
-        'page',
-        'interface',
-        'button',
-        'form',
-      ],
-      backend: [
-        'api',
-        'backend',
-        'database',
-        'server',
-        'endpoint',
-        'service',
-        'model',
-        'query',
-        'migration',
-        'auth',
-      ],
-      interview: [
-        'interview',
-        'leetcode',
-        'dsa',
-        'system design',
-        'coding challenge',
-        'practice',
-        'algorithm',
-        'preparation',
-      ],
-      meeting: [
-        'meeting',
-        'standup',
-        'sync',
-        'call',
-        'discussion',
-        'presentation',
-        '1:1',
-        'one-on-one',
-      ],
-      review: [
-        'review',
-        'pr',
-        'code review',
-        'feedback',
-        'pull request',
-        'merge',
-        'approve',
-      ],
-      planning: [
-        'plan',
-        'planning',
-        'roadmap',
-        'strategy',
-        'brainstorm',
-        'design doc',
-        'spec',
-        'requirements',
-      ],
-      learning: [
-        'learn',
-        'study',
-        'tutorial',
-        'course',
-        'training',
-        'documentation',
-        'reading',
-        'workshop',
-      ],
-      admin: [
-        'admin',
-        'email',
-        'expense',
-        'schedule',
-        'calendar',
-        'invoice',
-        'timesheet',
-        'paperwork',
-      ],
-      general: [],
-    };
-
     // Check each context type for keyword matches
-    for (const [contextType, keywords] of Object.entries(contextKeywords)) {
+    for (const [contextType, keywords] of Object.entries(CONTEXT_KEYWORDS)) {
       for (const keyword of keywords) {
         if (text.includes(keyword)) {
           return contextType as ContextType;
@@ -277,7 +159,7 @@ class ContextBuilder {
     }
 
     // Default to general if no match found
-    return 'general';
+    return DEFAULTS.CONTEXT_TYPE;
   }
 
   /**
@@ -285,35 +167,34 @@ class ContextBuilder {
    */
   estimateDuration(todo: Todo): number {
     // First, check tags for explicit duration (2h, 30m, 1.5hr)
-    const durationPattern = /(\d+(?:\.\d+)?)\s*(h|hr|hour|m|min|minute)s?/i;
-
     for (const tag of todo.tags) {
-      const match = tag.match(durationPattern);
-      if (match) {
-        const value = parseFloat(match[1]);
-        const unit = match[2].toLowerCase();
+      // Check for hours pattern
+      const hoursMatch = tag.match(DURATION_PATTERNS.hours);
+      if (hoursMatch) {
+        const value = parseFloat(hoursMatch[1]);
+        return Math.round(value * 60);
+      }
 
-        // Convert to minutes
-        if (unit.startsWith('h')) {
-          return Math.round(value * 60);
-        } else {
-          return Math.round(value);
-        }
+      // Check for minutes pattern
+      const minutesMatch = tag.match(DURATION_PATTERNS.minutes);
+      if (minutesMatch) {
+        const value = parseFloat(minutesMatch[1]);
+        return Math.round(value);
       }
     }
 
     // Check description for duration
     if (todo.description) {
-      const match = todo.description.match(durationPattern);
-      if (match) {
-        const value = parseFloat(match[1]);
-        const unit = match[2].toLowerCase();
+      const hoursMatch = todo.description.match(DURATION_PATTERNS.hours);
+      if (hoursMatch) {
+        const value = parseFloat(hoursMatch[1]);
+        return Math.round(value * 60);
+      }
 
-        if (unit.startsWith('h')) {
-          return Math.round(value * 60);
-        } else {
-          return Math.round(value);
-        }
+      const minutesMatch = todo.description.match(DURATION_PATTERNS.minutes);
+      if (minutesMatch) {
+        const value = parseFloat(minutesMatch[1]);
+        return Math.round(value);
       }
     }
 

@@ -1,25 +1,19 @@
 import axios, { AxiosInstance } from 'axios';
+import { RecommendationMethod, UserContext } from '../types/chat';
 import { Todo } from '../types/todo';
-import { UserContext, RecommendationMethod } from '../types/chat';
-
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-
-// TODO: Move to environment variables
-const API_KEY = 'your-anthropic-api-key-here';
+import { API_CONFIG, TIMEOUTS } from '../utils/constants';
 
 class AIService {
   private axiosInstance: AxiosInstance;
 
   constructor() {
+    // Use proxy server to avoid CORS issues
     this.axiosInstance = axios.create({
-      baseURL: ANTHROPIC_API_URL,
+      baseURL: API_CONFIG.PROXY_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
       },
-      timeout: 30000, // 30 second timeout
+      timeout: TIMEOUTS.AI_REQUEST,
     });
   }
 
@@ -223,20 +217,23 @@ Provide actionable, specific recommendations in a friendly, motivating tone.`;
   }
 
   /**
-   * Make API call to Claude
+   * Make API call to Claude via proxy server
    */
   async callClaude(content: any[]): Promise<string> {
     try {
-      const response = await this.axiosInstance.post('', {
-        model: MODEL,
-        max_tokens: 4096,
-        messages: [
-          {
-            role: 'user',
-            content,
-          },
-        ],
-      });
+      const response = await this.axiosInstance.post(
+        API_CONFIG.ANTHROPIC_PROXY_ENDPOINT,
+        {
+          model: API_CONFIG.ANTHROPIC_MODEL,
+          max_tokens: 4096,
+          messages: [
+            {
+              role: 'user',
+              content,
+            },
+          ],
+        }
+      );
 
       if (!response.data?.content?.[0]?.text) {
         throw new Error('Invalid response format from Claude API');
@@ -247,7 +244,7 @@ Provide actionable, specific recommendations in a friendly, motivating tone.`;
       if (error.response) {
         // API error response
         const status = error.response.status;
-        const message = error.response.data?.error?.message || 'Unknown error';
+        const message = error.response.data?.error || error.response.data?.message || 'Unknown error';
 
         if (status === 401) {
           throw new Error('Invalid API key. Please check your Anthropic API key.');
@@ -255,12 +252,16 @@ Provide actionable, specific recommendations in a friendly, motivating tone.`;
           throw new Error('Rate limit exceeded. Please try again later.');
         } else if (status === 400) {
           throw new Error(`Bad request: ${message}`);
+        } else if (status === 500) {
+          throw new Error('Proxy server error. Make sure the proxy server is running.');
+        } else if (status === 503) {
+          throw new Error('Unable to reach Anthropic API through proxy.');
         } else {
           throw new Error(`API error (${status}): ${message}`);
         }
       } else if (error.request) {
         // Network error
-        throw new Error('Network error: Unable to reach Claude API');
+        throw new Error('Network error: Unable to reach proxy server. Make sure it is running on port 3001.');
       } else {
         // Other errors
         throw new Error(`Failed to call Claude API: ${error.message}`);

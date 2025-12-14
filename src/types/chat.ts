@@ -1,4 +1,5 @@
 import { EnergyLevel } from './todo';
+import { WORK_SCHEDULE, DEFAULTS } from '../utils/constants';
 
 // Type definition for message roles
 export type MessageRole = 'user' | 'assistant';
@@ -56,18 +57,19 @@ export function createUserContext(
 
   // Determine time of day based on hours
   const getTimeOfDay = (hour: number): TimeOfDay => {
-    if (hour >= 5 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 17) return 'afternoon';
-    if (hour >= 17 && hour < 21) return 'evening';
+    const { morning, afternoon, evening } = WORK_SCHEDULE.timeOfDay;
+    if (hour >= morning.start && hour < morning.end) return 'morning';
+    if (hour >= afternoon.start && hour < afternoon.end) return 'afternoon';
+    if (hour >= evening.start && hour < evening.end) return 'evening';
     return 'night';
   };
 
-  // Determine if it's work hours (9 AM - 5 PM)
-  const isWorkHours = hours >= 9 && hours < 17;
+  // Determine if it's work hours
+  const isWorkHours = hours >= WORK_SCHEDULE.workHours.start && hours < WORK_SCHEDULE.workHours.end;
 
-  // Determine if it's weekend (0 = Sunday, 6 = Saturday)
+  // Determine if it's weekend
   const dayOfWeek = now.getDay();
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isWeekend = WORK_SCHEDULE.weekendDays.includes(dayOfWeek);
 
   // Get day name
   const dayNames = [
@@ -87,7 +89,7 @@ export function createUserContext(
     isWeekend: data?.isWeekend ?? isWeekend,
     isWorkHours: data?.isWorkHours ?? isWorkHours,
     timeOfDay: data?.timeOfDay || getTimeOfDay(hours),
-    energyLevel: data?.energyLevel || 'medium',
+    energyLevel: data?.energyLevel || DEFAULTS.ENERGY_LEVEL,
     timezone:
       data?.timezone ||
       Intl.DateTimeFormat().resolvedOptions().timeZone,

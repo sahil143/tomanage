@@ -1,19 +1,76 @@
-import axios, { AxiosInstance } from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import axios, { AxiosInstance, isAxiosError } from 'axios';
+import { encode as base64Encode } from 'base-64';
 import { EnergyLevel, Priority, Todo, createTodo } from '../types/todo';
+import { API_CONFIG, STORAGE_KEYS, TIMEOUTS } from '../utils/constants';
+import { SecureStore } from '../utils/storage';
 
-const BASE_URL = 'https://api.ticktick.com/open/v1';
-const TOKEN_KEY = 'ticktick_access_token';
+// TickTick API Types
+interface TickTickProject {
+  id: string;
+  name: string;
+  color?: string;
+  closed?: boolean;
+  groupId?: string;
+  viewMode?: string;
+  permission?: string;
+  kind?: string;
+}
+
+interface TickTickTask {
+  id: string;
+  isAllDay?: boolean;
+  projectId: string;
+  title: string;
+  content?: string;
+  desc?: string;
+  timeZone?: string;
+  repeatFlag?: string;
+  startDate?: string;
+  dueDate?: string;
+  reminders?: string[];
+  priority?: number;
+  status?: number;
+  completedTime?: string;
+  createdTime?: string;
+  sortOrder?: number;
+  tags?: string[];
+  items?: TickTickSubtask[];
+}
+
+interface TickTickSubtask {
+  id: string;
+  status: number;
+  title: string;
+  sortOrder: number;
+  startDate?: string;
+  isAllDay?: boolean;
+  timeZone?: string;
+  completedTime?: string;
+}
+
+interface TickTickColumn {
+  id: string;
+  projectId: string;
+  name: string;
+  sortOrder: number;
+}
+
+interface TickTickProjectData {
+  project: TickTickProject;
+  tasks: TickTickTask[];
+  columns?: TickTickColumn[];
+}
 
 class TickTickService {
   private axiosInstance: AxiosInstance;
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: BASE_URL,
+      baseURL: API_CONFIG.TICKTICK_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
       },
+      timeout: TIMEOUTS.SYNC_REQUEST,
     });
 
     // Add request interceptor to attach token
@@ -36,7 +93,7 @@ class TickTickService {
    */
   async setAccessToken(token: string): Promise<void> {
     try {
-      await SecureStore.setItemAsync(TOKEN_KEY, token);
+      await SecureStore.setItemAsync(STORAGE_KEYS.TICKTICK_TOKEN, token);
     } catch (error) {
       throw new Error(`Failed to store access token: ${error}`);
     }
@@ -47,7 +104,7 @@ class TickTickService {
    */
   async getAccessToken(): Promise<string | null> {
     try {
-      return await SecureStore.getItemAsync(TOKEN_KEY);
+      return await SecureStore.getItemAsync(STORAGE_KEYS.TICKTICK_TOKEN);
     } catch (error) {
       console.error('Failed to retrieve access token:', error);
       return null;
@@ -55,32 +112,115 @@ class TickTickService {
   }
 
   /**
-   * Get all tasks from TickTick
+   * Exchange authorization code for access token
+   * This is Step 3 of the OAuth flow
+   * @param code - The authorization code received from TickTick
+   * @param redirectUri - The same redirect URI used in the authorization request
+   * @returns The access token
+   */
+  async exchangeCodeForToken(code: string, redirectUri: string): Promise<string> {
+    try {
+      const { TICKTICK_CLIENT_ID, TICKTICK_CLIENT_SECRET, TICKTICK_OAUTH_URL } = API_CONFIG;
+
+      if (!TICKTICK_CLIENT_ID || !TICKTICK_CLIENT_SECRET) {
+        throw new Error('TickTick client ID or secret not configured');
+      }
+
+      // Create Basic Auth header
+      const credentials = `${TICKTICK_CLIENT_ID}:${TICKTICK_CLIENT_SECRET}`;
+      const base64Credentials = base64Encode(credentials);
+
+      // Prepare form data
+      const formData = new URLSearchParams({
+        client_id: TICKTICK_CLIENT_ID,
+        code,
+        grant_type: 'authorization_code',
+        scope: 'tasks:read tasks:write',
+        redirect_uri: redirectUri,
+      });
+
+      const response = await axios.post(
+        `${TICKTICK_OAUTH_URL}/token`,
+        formData.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${base64Credentials}`,
+          },
+          timeout: TIMEOUTS.API_REQUEST,
+        }
+      );
+
+      const { access_token } = response.data;
+
+      if (!access_token) {
+        throw new Error('No access token received from TickTick');
+      }
+
+      // Store the token
+      await this.setAccessToken(access_token);
+
+      return access_token;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(`Failed to exchange code for token: ${error.response?.data?.error_description || error.message}`);
+      }
+      throw new Error(`Failed to exchange code for token: ${error}`);
+    }
+  }
+
+  /**
+   * Check if user is authenticated (has a valid token)
+   */
+  async isAuthenticated(): Promise<boolean> {
+    const token = await this.getAccessToken();
+    return !!token;
+  }
+
+  /**
+   * Logout and clear the access token
+   */
+  async logout(): Promise<void> {
+    try {
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.TICKTICK_TOKEN);
+    } catch (error) {
+      console.error('Failed to clear access token:', error);
+    }
+  }
+
+  /**
+   * Get all tasks from TickTick (from all projects)
    */
   async getTasks(): Promise<Todo[]> {
     try {
-      const response = await this.axiosInstance.get('/task');
-      const tasks = response.data;
+      // Get all projects first
+      const projects = await this.getProjects();
 
-      if (!Array.isArray(tasks)) {
-        throw new Error('Invalid response format from TickTick API');
+      // Get tasks from all projects
+      const allTasks: Todo[] = [];
+      for (const project of projects) {
+        const projectData = await this.getProjectWithData(project.id);
+        if (projectData.tasks && Array.isArray(projectData.tasks)) {
+          const todos = projectData.tasks.map((task: any) => this.convertTickTickToTodo(task));
+          allTasks.push(...todos);
+        }
       }
 
-      return tasks.map((task) => this.convertTickTickToTodo(task));
+      return allTasks;
     } catch (error) {
       throw new Error(`Failed to fetch tasks: ${error}`);
     }
   }
 
   /**
-   * Get a single task by ID
+   * Get a single task by project ID and task ID
    */
-  async getTask(id: string): Promise<Todo> {
+  async getTask(projectId: string, taskId: string): Promise<Todo> {
     try {
-      const response = await this.axiosInstance.get(`/task/${id}`);
+      const response = await this.axiosInstance.get(`/project/${projectId}/task/${taskId}`);
       return this.convertTickTickToTodo(response.data);
     } catch (error) {
-      throw new Error(`Failed to fetch task ${id}: ${error}`);
+      throw new Error(`Failed to fetch task ${taskId}: ${error}`);
     }
   }
 
@@ -143,7 +283,7 @@ class TickTickService {
   /**
    * Get all projects from TickTick
    */
-  async getProjects(): Promise<any[]> {
+  async getProjects(): Promise<TickTickProject[]> {
     try {
       const response = await this.axiosInstance.get('/project');
       return response.data;
@@ -153,9 +293,33 @@ class TickTickService {
   }
 
   /**
+   * Get a single project by ID
+   */
+  async getProject(projectId: string): Promise<TickTickProject> {
+    try {
+      const response = await this.axiosInstance.get(`/project/${projectId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch project ${projectId}: ${error}`);
+    }
+  }
+
+  /**
+   * Get project with all its data (tasks, columns, etc.)
+   */
+  async getProjectWithData(projectId: string): Promise<TickTickProjectData> {
+    try {
+      const response = await this.axiosInstance.get(`/project/${projectId}/data`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch project data for ${projectId}: ${error}`);
+    }
+  }
+
+  /**
    * Convert TickTick task format to our Todo type
    */
-  convertTickTickToTodo(data: any): Todo {
+  convertTickTickToTodo(data: TickTickTask): Todo {
     // Extract energy and duration from tags
     let energyRequired: EnergyLevel | undefined;
     let estimatedDuration: number | undefined;
@@ -194,6 +358,7 @@ class TickTickService {
       energyRequired,
       estimatedDuration,
       ticktickId: data.id,
+      ticktickProjectId: data.projectId,
       synced: true,
     });
   }

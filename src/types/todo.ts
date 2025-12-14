@@ -49,6 +49,7 @@ export interface Todo {
 
   // Sync fields
   ticktickId?: string;
+  ticktickProjectId?: string;
   synced: boolean;
 }
 
@@ -77,6 +78,7 @@ export function createTodo(data: Partial<Todo>): Todo {
 
     // Sync fields
     ticktickId: data.ticktickId,
+    ticktickProjectId: data.ticktickProjectId,
     synced: data.synced ?? false,
   };
 }

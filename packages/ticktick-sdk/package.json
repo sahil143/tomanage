@@ -1,0 +1,40 @@
+{
+  "name": "@tomanage/ticktick-sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for TickTick API with OAuth support",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.2"
+  },
+  "keywords": [
+    "ticktick",
+    "sdk",
+    "typescript",
+    "oauth",
+    "task-management",
+    "todo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/tomanage",
+    "directory": "packages/ticktick-sdk"
+  },
+  "license": "MIT"
+}

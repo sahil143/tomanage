@@ -1,30 +1,30 @@
 // Type definitions for Priority levels
-export type Priority = 'none' | 'low' | 'medium' | 'high';
+export type Priority = "none" | "low" | "medium" | "high";
 
 // Type definitions for Energy levels
-export type EnergyLevel = 'low' | 'medium' | 'high';
+export type EnergyLevel = "low" | "medium" | "high";
 
 // Type definitions for Context types
 export type ContextType =
-  | 'frontend'
-  | 'backend'
-  | 'interview'
-  | 'meeting'
-  | 'review'
-  | 'planning'
-  | 'learning'
-  | 'admin'
-  | 'general';
+  | "frontend"
+  | "backend"
+  | "interview"
+  | "meeting"
+  | "review"
+  | "planning"
+  | "learning"
+  | "admin"
+  | "general";
 
 // Type definitions for Urgency levels
 export type Urgency =
-  | 'overdue'
-  | 'critical'
-  | 'today'
-  | 'tomorrow'
-  | 'this-week'
-  | 'future'
-  | 'none';
+  | "overdue"
+  | "critical"
+  | "today"
+  | "tomorrow"
+  | "this-week"
+  | "future"
+  | "none";
 
 // Main Todo interface
 export interface Todo {
@@ -59,10 +59,10 @@ export function createTodo(data: Partial<Todo>): Todo {
 
   return {
     id: data.id || generateId(),
-    title: data.title || '',
+    title: data.title || "",
     description: data.description,
     completed: data.completed ?? false,
-    priority: data.priority || 'none',
+    priority: data.priority || "none",
     category: data.category,
     tags: data.tags || [],
     dueDate: data.dueDate,
@@ -107,3 +107,5 @@ export function updateTodo(todo: Todo, updates: Partial<Todo>): Todo {
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
+
+

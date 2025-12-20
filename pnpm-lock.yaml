@@ -162,6 +162,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.37.0
         version: 0.37.0
+      '@tomanage/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@trpc/server':
         specifier: ^11.8.0
         version: 11.8.0(typescript@5.9.3)
@@ -267,11 +270,27 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@tomanage/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.2(jiti@1.21.7)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/shared-logic:
     dependencies:
-      '@tomanage/shared-types':
+      '@tomanage/shared':
         specifier: workspace:*
-        version: link:../shared-types
+        version: link:../shared
     devDependencies:
       '@tomanage/eslint-config':
         specifier: workspace:*
@@ -284,6 +303,10 @@ importers:
         version: 5.9.3
 
   packages/shared-types:
+    dependencies:
+      '@tomanage/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@tomanage/eslint-config':
         specifier: workspace:*

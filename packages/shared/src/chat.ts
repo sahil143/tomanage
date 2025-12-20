@@ -1,17 +1,17 @@
-import { EnergyLevel } from './todo';
-import { WORK_SCHEDULE, DEFAULTS } from './utils/constants';
+import type { EnergyLevel } from "./todo";
+import { DEFAULTS, WORK_SCHEDULE } from "./utils/constants";
 
 // Type definition for message roles
-export type MessageRole = 'user' | 'assistant';
+export type MessageRole = "user" | "assistant";
 
 export type RecommendationMethod =
-  | 'smart'
-  | 'energy'
-  | 'quick'
-  | 'eisenhower'
-  | 'focus';
+  | "smart"
+  | "energy"
+  | "quick"
+  | "eisenhower"
+  | "focus";
 
-export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
+export type TimeOfDay = "morning" | "afternoon" | "evening" | "night";
 
 export interface ChatMessage {
   id: string;
@@ -34,7 +34,6 @@ export interface UserContext {
   timezone: string;
 }
 
-
 export function createChatMessage(
   data: Partial<ChatMessage> & { role: MessageRole; content: string }
 ): ChatMessage {
@@ -49,37 +48,36 @@ export function createChatMessage(
   };
 }
 
-export function createUserContext(
-  data?: Partial<UserContext>
-): UserContext {
+export function createUserContext(data?: Partial<UserContext>): UserContext {
   const now = new Date();
   const hours = now.getHours();
 
   // Determine time of day based on hours
   const getTimeOfDay = (hour: number): TimeOfDay => {
     const { morning, afternoon, evening } = WORK_SCHEDULE.timeOfDay;
-    if (hour >= morning.start && hour < morning.end) return 'morning';
-    if (hour >= afternoon.start && hour < afternoon.end) return 'afternoon';
-    if (hour >= evening.start && hour < evening.end) return 'evening';
-    return 'night';
+    if (hour >= morning.start && hour < morning.end) return "morning";
+    if (hour >= afternoon.start && hour < afternoon.end) return "afternoon";
+    if (hour >= evening.start && hour < evening.end) return "evening";
+    return "night";
   };
 
   // Determine if it's work hours
-  const isWorkHours = hours >= WORK_SCHEDULE.workHours.start && hours < WORK_SCHEDULE.workHours.end;
+  const isWorkHours =
+    hours >= WORK_SCHEDULE.workHours.start && hours < WORK_SCHEDULE.workHours.end;
 
   // Determine if it's weekend
   const dayOfWeek = now.getDay();
-  const isWeekend = WORK_SCHEDULE.weekendDays.includes(dayOfWeek);
+  const isWeekend = WORK_SCHEDULE.weekendDays.includes(dayOfWeek as 0 | 6);
 
   // Get day name
   const dayNames = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
   ];
 
   return {
@@ -90,12 +88,12 @@ export function createUserContext(
     isWorkHours: data?.isWorkHours ?? isWorkHours,
     timeOfDay: data?.timeOfDay || getTimeOfDay(hours),
     energyLevel: data?.energyLevel || DEFAULTS.ENERGY_LEVEL,
-    timezone:
-      data?.timezone ||
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone: data?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
 }
 
 function generateMessageId(): string {
   return `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
+
+

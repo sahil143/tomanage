@@ -59,10 +59,10 @@ app.post('/api/ai/claude', async (req, res) => {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error calling Claude API:', message);
 
-    res.status(500).json({
-      error: 'Internal server error',
+      res.status(500).json({
+        error: 'Internal server error',
       message,
-    });
+      });
   }
 });
 

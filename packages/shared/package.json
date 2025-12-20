@@ -1,10 +1,20 @@
 {
-  "name": "@tomanage/shared-logic",
+  "name": "@tomanage/shared",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./server-schemas": {
+      "types": "./src/server-schemas.ts",
+      "default": "./dist/server-schemas.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -12,7 +22,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@tomanage/shared-types": "workspace:*"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tomanage/eslint-config": "workspace:*",
@@ -20,3 +30,5 @@
     "typescript": "^5.9.3"
   }
 }
+
+

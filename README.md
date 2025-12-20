@@ -1,50 +1,212 @@
-# Welcome to your Expo app 👋
+# ToManage
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+AI-powered todo management for Web, Mac, iOS, and Android.
 
-## Get started
+## 🚀 Quick Start
 
-1. Install dependencies
+### Prerequisites
 
-   ```bash
-   npm install
-   ```
+- Node.js 18+
+- pnpm 8+
+- Rust (for desktop app only)
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Installation
 
 ```bash
-npm run reset-project
+# Install pnpm
+npm install -g pnpm
+
+# Install dependencies
+pnpm install
+
+# Build shared packages
+pnpm build:packages
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Development
 
-## Learn more
+```bash
+# Web app (runs on localhost:1420)
+pnpm dev:web
 
-To learn more about developing your project with Expo, look at the following resources:
+# Desktop app (Mac)
+pnpm dev:desktop
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Mobile app (iOS/Android)
+pnpm dev:mobile
 
-## Join the community
+# Backend server
+pnpm dev:server
 
-Join our community of developers creating universal apps.
+# Everything in parallel
+pnpm dev
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📁 Project Structure
+
+```
+tomanage/
+├── apps/
+│   ├── web/          React + Vite web app
+│   ├── desktop/      Tauri wrapper for Mac
+│   ├── mobile/       React Native (iOS + Android)
+│   └── server/       tRPC backend with AI
+└── packages/
+    ├── shared-types/     TypeScript types
+    ├── shared-logic/     Business logic
+    └── ticktick-sdk/     TickTick integration
+```
+
+## 🛠️ Setup Details
+
+### Environment Variables
+
+**apps/server/.env:**
+```bash
+ANTHROPIC_API_KEY=your_key_here
+PORT=3001
+```
+
+**apps/mobile/.env:**
+```bash
+TICKTICK_CLIENT_ID=your_client_id
+TICKTICK_CLIENT_SECRET=your_secret
+TICKTICK_REDIRECT_URI=your_redirect_uri
+```
+
+### Platform-Specific Setup
+
+#### Desktop (Mac)
+```bash
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Verify installation
+rustc --version
+```
+
+#### Mobile (iOS)
+```bash
+# Install CocoaPods
+sudo gem install cocoapods
+
+# Install iOS dependencies
+cd apps/mobile/ios && pod install && cd ../../..
+```
+
+#### Mobile (Android)
+- Install Android Studio
+- Set up Android SDK
+
+## 📝 Commands
+
+### Development
+```bash
+pnpm dev:web              # Web app
+pnpm dev:desktop          # Desktop (includes web)
+pnpm dev:mobile           # Mobile
+pnpm dev:server           # Backend
+pnpm dev                  # All services
+```
+
+### Build
+```bash
+pnpm build:web            # → apps/web/dist/
+pnpm build:desktop        # → .app file
+pnpm build:packages       # → packages/*/dist/
+pnpm build                # Everything
+```
+
+### Mobile
+```bash
+pnpm mobile:ios           # iOS simulator
+pnpm mobile:android       # Android emulator
+```
+
+## 🎯 Features
+
+- **Web App** - Deploy to Vercel, Netlify, etc.
+- **Mac Desktop** - Native menu bar, keyboard shortcuts
+- **Mobile Apps** - iOS and Android
+- **AI Assistant** - Chat to manage tasks
+- **Screenshot → Todos** - Create tasks from screenshots
+- **Smart Recommendations** - AI suggests what to work on next
+- **TickTick Integration** - Sync with TickTick
+- **iOS Widgets** - Coming soon
+
+## 🏗️ Tech Stack
+
+- **Web:** React 18, Vite, Tailwind CSS, cmdk
+- **Desktop:** Tauri (Rust)
+- **Mobile:** React Native, Expo
+- **Backend:** tRPC, Express, Anthropic Claude
+- **Monorepo:** pnpm workspaces
+
+## 📦 Package Management
+
+This project uses **pnpm workspaces** for monorepo management:
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+All apps can import from shared packages:
+```typescript
+import { Todo } from '@tomanage/shared-types'
+import { sortTodos } from '@tomanage/shared-logic'
+```
+
+## 🚢 Deployment
+
+### Web App
+```bash
+pnpm build:web
+# Deploy apps/web/dist/ to Vercel, Netlify, etc.
+```
+
+### Desktop App
+```bash
+pnpm build:desktop
+# Distribute apps/desktop/tauri/target/release/bundle/macos/ToManage.app
+```
+
+### Mobile Apps
+```bash
+cd apps/mobile
+expo build:ios
+expo build:android
+```
+
+## 🐛 Troubleshooting
+
+### Desktop app won't start
+- Verify Rust: `rustc --version`
+- Clean build: `cd apps/desktop/tauri && cargo clean`
+
+### Shared packages not found
+```bash
+pnpm build:packages
+```
+
+### Port conflicts
+- Web/Desktop: 1420
+- Server: 3001
+- Mobile: 8081
+
+### Clean install
+```bash
+rm -rf node_modules apps/*/node_modules packages/*/node_modules
+pnpm install
+pnpm build:packages
+```
+
+## 📚 Documentation
+
+- **ARCHITECTURE.md** - Complete architecture and design decisions
+
+## 📄 License
+
+Private - All rights reserved

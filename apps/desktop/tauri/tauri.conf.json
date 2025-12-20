@@ -1,0 +1,46 @@
+{
+  "productName": "ToManage",
+  "version": "1.0.0",
+  "identifier": "com.tomanage.app",
+  "build": {
+    "beforeDevCommand": "pnpm --filter @tomanage/web dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm --filter @tomanage/web build",
+    "frontendDist": "../../web/dist"
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [],
+    "copyright": "",
+    "category": "Productivity",
+    "shortDescription": "AI-powered todo management",
+    "longDescription": "ToManage helps you manage tasks with AI assistance, screenshot analysis, and smart recommendations.",
+    "macOS": {
+      "minimumSystemVersion": "10.13"
+    }
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "ToManage",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

@@ -1,49 +1,59 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# Expo
-.expo/
+# Testing
+coverage/
+
+# Production builds
 dist/
-web-build/
-expo-env.d.ts
+build/
+*.app
+*.dmg
+*.exe
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
+# Misc
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
-.env
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# typescript
+# Local env files
+.env
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Tauri
+desktop/src-tauri/target/
+desktop/src-tauri/Cargo.lock
+
+# Expo
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+
+# React Native
+mobile/ios/Pods/
+mobile/ios/build/
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+
+# TypeScript
 *.tsbuildinfo
 
-app-example
-
-# generated native folders
-/ios
-/android
-
-.pnp.*
-.yarn
-
-./context/*
+# Rust
+**/target/
+**/*.rs.bk

@@ -43,8 +43,8 @@ app.post('/api/ai/claude', async (req, res) => {
       });
     }
 
-    // Import Anthropic SDK
-    const Anthropic = require('@anthropic-ai/sdk').default;
+    // Import Anthropic SDK (ESM-safe)
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
     const anthropic = new Anthropic({ apiKey });
 
     // Make request to Anthropic API

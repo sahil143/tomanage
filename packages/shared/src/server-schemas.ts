@@ -161,4 +161,33 @@ export const userProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
+// ===== TickTick (Server-side integration) =====
+
+export const ticktickGetAuthUrlInputSchema = z.object({
+  userId: z.string().optional(),
+  redirectUri: z.string(),
+});
+
+export const ticktickExchangeCodeInputSchema = z.object({
+  userId: z.string().optional(),
+  code: z.string(),
+  redirectUri: z.string(),
+  state: z.string(),
+});
+
+export const ticktickSyncTasksInputSchema = z.object({
+  userId: z.string().optional(),
+  force: z.boolean().optional(),
+});
+
+export const ticktickGetTasksInputSchema = z.object({
+  userId: z.string().optional(),
+  refresh: z.boolean().optional(),
+  maxAgeSeconds: z.number().optional(),
+});
+
+export const ticktickDisconnectInputSchema = z.object({
+  userId: z.string().optional(),
+});
+
 

@@ -19,7 +19,7 @@ export interface ChatOptions {
 
 export interface ChatResponse {
   content: string;
-  toolCalls?: any[];
+  toolCalls?: unknown[];
   stopReason: string;
   usage?: {
     input_tokens: number;
@@ -75,7 +75,7 @@ export async function chat(
 
       return {
         content: textContent,
-        stopReason: response.stop_reason,
+        stopReason: response.stop_reason ?? 'unknown',
         usage: response.usage,
       };
     }
@@ -105,12 +105,12 @@ export async function chat(
           tool_use_id: toolUse.id,
           content: JSON.stringify(result),
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         toolResults.push({
           type: 'tool_result',
           tool_use_id: toolUse.id,
           content: JSON.stringify({
-            error: error.message || 'Tool execution failed',
+            error: error instanceof Error ? error.message : 'Tool execution failed',
           }),
           is_error: true,
         });
@@ -153,7 +153,7 @@ export async function simpleChat(
 
   return {
     content: textContent,
-    stopReason: response.stop_reason,
+    stopReason: response.stop_reason ?? 'unknown',
     usage: response.usage,
   };
 }

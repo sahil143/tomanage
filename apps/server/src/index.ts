@@ -3,7 +3,7 @@ import cors from 'cors';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import dotenv from 'dotenv';
 import { appRouter } from './router';
-import { createContext } from './trpc';
+import { createContext } from './context';
 
 // Load environment variables
 dotenv.config();
@@ -55,20 +55,14 @@ app.post('/api/ai/claude', async (req, res) => {
     });
 
     res.json(response);
-  } catch (error: any) {
-    console.error('Error calling Claude API:', error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error calling Claude API:', message);
 
-    if (error.response) {
-      res.status(error.response.status).json({
-        error: error.response.data?.error?.message || 'API request failed',
-        details: error.response.data,
-      });
-    } else {
-      res.status(500).json({
-        error: 'Internal server error',
-        message: error.message,
-      });
-    }
+    res.status(500).json({
+      error: 'Internal server error',
+      message,
+    });
   }
 });
 
@@ -77,7 +71,13 @@ app.use(
   '/trpc',
   createExpressMiddleware({
     router: appRouter,
-    createContext,
+    createContext: (opts) => {
+      const baseCtx = createContext(opts);
+      return {
+        ...baseCtx,
+        caller: appRouter.createCaller(baseCtx),
+      };
+    },
   })
 );
 

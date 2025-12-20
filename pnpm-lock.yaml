@@ -163,7 +163,7 @@ importers:
         specifier: ^0.37.0
         version: 0.37.0
       '@trpc/server':
-        specifier: ^11.0.0-rc.682
+        specifier: ^11.8.0
         version: 11.8.0(typescript@5.9.3)
       cors:
         specifier: ^2.8.5
@@ -175,17 +175,17 @@ importers:
         specifier: ^16.4.7
         version: 16.6.1
       express:
-        specifier: ^5.0.1
+        specifier: ^5.2.1
         version: 5.2.1
       zod:
-        specifier: ^3.24.1
+        specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
       '@types/cors':
-        specifier: ^2.8.17
+        specifier: ^2.8.19
         version: 2.8.19
       '@types/express':
-        specifier: ^5.0.0
+        specifier: ^5.0.6
         version: 5.0.6
       '@types/node':
         specifier: ^25.0.0

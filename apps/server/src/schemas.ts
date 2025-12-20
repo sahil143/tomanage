@@ -27,7 +27,7 @@ export const aiMessageSchema = z.object({
     z.array(z.object({
       type: z.string(),
       text: z.string().optional(),
-      source: z.any().optional(),
+      source: z.unknown().optional(),
     })),
   ]),
 });
@@ -59,7 +59,7 @@ export const extractTodosInputSchema = z.object({
     z.array(z.object({
       type: z.string(),
       text: z.string().optional(),
-      source: z.any().optional(),
+      source: z.unknown().optional(),
     })),
   ]),
 });
@@ -73,7 +73,7 @@ export const patternTypeSchema = z.enum([
   'learned_behaviors',
 ]);
 
-export const patternDataSchema = z.record(z.any());
+export const patternDataSchema = z.record(z.unknown());
 
 export const savePatternInputSchema = z.object({
   userId: z.string(),

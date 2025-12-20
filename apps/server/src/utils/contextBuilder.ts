@@ -1,6 +1,6 @@
-import { format, getHours, getDay } from 'date-fns';
-import { storageService } from '../services/storage';
+import { format, getDay, getHours } from 'date-fns';
 import { CurrentContext, UserProfile } from '../schemas';
+import { storageService } from '../services/storage';
 
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -44,7 +44,7 @@ export function getCurrentContext(userId: string): CurrentContext {
 export function getUserProfile(userId: string): UserProfile {
   const preferences = storageService.getOrCreateDefaultPreferences(userId);
   const currentContext = getCurrentContext(userId);
-  const patterns = storageService.getAllPatterns(userId);
+  const patterns: Record<string, Record<string, unknown>> = storageService.getAllPatterns(userId);
 
   return {
     userId,

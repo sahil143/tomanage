@@ -1,23 +1,19 @@
 import { UserPreferences, AnalyticsEntry } from '../schemas';
 
-// In-memory storage using Map
-// Structure: storage.set('user-1:preferences', {...})
-// Structure: storage.set('user-1:pattern:productivity_by_hour', {...})
-// Structure: storage.set('user-1:analytics', [...])
 class StorageService {
-  private storage = new Map<string, any>();
+  private preferencesByUserId = new Map<string, UserPreferences>();
+  private patternsByUserAndType = new Map<string, Record<string, unknown>>();
+  private analyticsByUserId = new Map<string, AnalyticsEntry[]>();
 
   // ===== Preferences =====
 
   savePreferences(userId: string, preferences: UserPreferences): void {
-    const key = `${userId}:preferences`;
-    this.storage.set(key, preferences);
+    this.preferencesByUserId.set(userId, preferences);
     console.log(`[Storage] Saved preferences for ${userId}`);
   }
 
   getPreferences(userId: string): UserPreferences | null {
-    const key = `${userId}:preferences`;
-    return this.storage.get(key) || null;
+    return this.preferencesByUserId.get(userId) ?? null;
   }
 
   getOrCreateDefaultPreferences(userId: string): UserPreferences {
@@ -58,22 +54,22 @@ class StorageService {
 
   // ===== Patterns =====
 
-  savePattern(userId: string, patternType: string, data: Record<string, any>): void {
-    const key = `${userId}:pattern:${patternType}`;
-    this.storage.set(key, data);
+  savePattern(userId: string, patternType: string, data: Record<string, unknown>): void {
+    const key = `${userId}:${patternType}`;
+    this.patternsByUserAndType.set(key, data);
     console.log(`[Storage] Saved pattern '${patternType}' for ${userId}`, data);
   }
 
-  getPattern(userId: string, patternType: string): Record<string, any> | null {
-    const key = `${userId}:pattern:${patternType}`;
-    return this.storage.get(key) || null;
+  getPattern(userId: string, patternType: string): Record<string, unknown> | null {
+    const key = `${userId}:${patternType}`;
+    return this.patternsByUserAndType.get(key) ?? null;
   }
 
-  getAllPatterns(userId: string): Record<string, any> {
-    const patterns: Record<string, any> = {};
-    const prefix = `${userId}:pattern:`;
+  getAllPatterns(userId: string): Record<string, Record<string, unknown>> {
+    const patterns: Record<string, Record<string, unknown>> = {};
+    const prefix = `${userId}:`;
 
-    for (const [key, value] of this.storage.entries()) {
+    for (const [key, value] of this.patternsByUserAndType.entries()) {
       if (key.startsWith(prefix)) {
         const patternType = key.replace(prefix, '');
         patterns[patternType] = value;
@@ -86,16 +82,14 @@ class StorageService {
   // ===== Analytics =====
 
   saveAnalytics(userId: string, entry: AnalyticsEntry): void {
-    const key = `${userId}:analytics`;
-    const existing = this.storage.get(key) || [];
+    const existing = this.analyticsByUserId.get(userId) ?? [];
     existing.push(entry);
-    this.storage.set(key, existing);
+    this.analyticsByUserId.set(userId, existing);
     console.log(`[Storage] Saved analytics entry for ${userId}`);
   }
 
   getAnalytics(userId: string, limit?: number): AnalyticsEntry[] {
-    const key = `${userId}:analytics`;
-    const entries = this.storage.get(key) || [];
+    const entries = this.analyticsByUserId.get(userId) ?? [];
 
     if (limit) {
       return entries.slice(-limit);
@@ -108,24 +102,28 @@ class StorageService {
 
   clear(userId?: string): void {
     if (userId) {
-      // Clear only user's data
-      const keysToDelete: string[] = [];
-      for (const key of this.storage.keys()) {
+      this.preferencesByUserId.delete(userId);
+      this.analyticsByUserId.delete(userId);
+      for (const key of this.patternsByUserAndType.keys()) {
         if (key.startsWith(`${userId}:`)) {
-          keysToDelete.push(key);
+          this.patternsByUserAndType.delete(key);
         }
       }
-      keysToDelete.forEach(key => this.storage.delete(key));
       console.log(`[Storage] Cleared data for ${userId}`);
     } else {
-      // Clear all data
-      this.storage.clear();
+      this.preferencesByUserId.clear();
+      this.patternsByUserAndType.clear();
+      this.analyticsByUserId.clear();
       console.log('[Storage] Cleared all data');
     }
   }
 
   getAllKeys(): string[] {
-    return Array.from(this.storage.keys());
+    return [
+      ...this.preferencesByUserId.keys(),
+      ...this.analyticsByUserId.keys(),
+      ...this.patternsByUserAndType.keys(),
+    ];
   }
 }
 

@@ -1,21 +1,24 @@
-import { router, publicProcedure } from '../trpc';
-import { chat, simpleChat } from '../services/anthropic';
-import { promptBuilder } from '../services/promptBuilder';
-import { AI_TOOLS } from '../utils/toolMapper';
+import type Anthropic from '@anthropic-ai/sdk';
+import { z } from 'zod';
 import {
   chatInputSchema,
-  recommendationInputSchema,
   extractTodosInputSchema,
+  recommendationInputSchema,
   todoSchema,
 } from '../schemas';
-import { z } from 'zod';
+import { chat, simpleChat } from '../services/anthropic';
+import { promptBuilder } from '../services/promptBuilder';
+import { publicProcedure, router } from '../trpc';
+import { AI_TOOLS } from '../utils/toolMapper';
 
 export const aiRouter = router({
   // Main conversational endpoint with function calling
   chat: publicProcedure
     .input(chatInputSchema)
-    .mutation(async ({ input, ctx, caller }) => {
+    .mutation(async ({ input, ctx }) => {
       const userId = input.userId || ctx.userId;
+      const caller = ctx.caller;
+      if (!caller) throw new Error('Internal error: missing tRPC caller in context');
 
       // Build system prompt for conversational task creation
       const systemPrompt = promptBuilder.buildConversationalPrompt(userId);
@@ -27,7 +30,7 @@ export const aiRouter = router({
         {
           messages: input.messages.map(msg => ({
             role: msg.role,
-            content: msg.content as any,
+            content: msg.content as Anthropic.MessageParam['content'],
           })),
           tools: AI_TOOLS,
           systemPrompt,
@@ -49,8 +52,10 @@ export const aiRouter = router({
   // Get task recommendation based on method
   getRecommendation: publicProcedure
     .input(recommendationInputSchema)
-    .mutation(async ({ input, ctx, caller }) => {
+    .mutation(async ({ input, ctx }) => {
       const userId = input.userId || ctx.userId;
+      const caller = ctx.caller;
+      if (!caller) throw new Error('Internal error: missing tRPC caller in context');
 
       console.log(`[AI Router] Recommendation request from user ${userId}, method: ${input.method}`);
 
@@ -102,7 +107,7 @@ export const aiRouter = router({
       const messages = [
         {
           role: 'user' as const,
-          content: input.content as any,
+          content: input.content as Anthropic.MessageParam['content'],
         },
       ];
 
@@ -128,7 +133,7 @@ export const aiRouter = router({
           count: todosArray.length,
           usage: response.usage,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[AI Router] Failed to parse todos:', error);
 
         // Return raw response if parsing fails

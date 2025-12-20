@@ -24,9 +24,9 @@
   "devDependencies": {
     "@tomanage/eslint-config": "workspace:*",
     "@tomanage/vite-config": "workspace:*",
-    "eslint": "^9.25.0",
+    "eslint": "^9.39.1",
     "vite": "^7.3.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   },
   "keywords": [
     "ticktick",

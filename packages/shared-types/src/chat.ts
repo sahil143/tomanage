@@ -1,5 +1,5 @@
 import { EnergyLevel } from './todo';
-import { WORK_SCHEDULE, DEFAULTS } from '../utils/constants';
+import { WORK_SCHEDULE, DEFAULTS } from './utils/constants';
 
 // Type definition for message roles
 export type MessageRole = 'user' | 'assistant';

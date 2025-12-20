@@ -2,17 +2,21 @@
   "name": "@tomanage/shared-logic",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@tomanage/shared-types": "workspace:*"
   },
   "devDependencies": {
+    "@tomanage/eslint-config": "workspace:*",
+    "eslint": "^9.25.0",
     "typescript": "^5.7.2"
   }
 }

@@ -2,12 +2,12 @@
   "name": "@tomanage/ticktick-sdk",
   "version": "1.0.0",
   "description": "TypeScript SDK for TickTick API with OAuth support",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -18,9 +18,12 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@tomanage/eslint-config": "workspace:*",
+    "eslint": "^9.25.0",
     "typescript": "^5.7.2"
   },
   "keywords": [

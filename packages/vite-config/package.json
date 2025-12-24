@@ -3,9 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "types": "./src/index.d.ts",
   "exports": {
-    ".": "./src/index.js",
-    "./library": "./src/library.js"
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./library": {
+      "types": "./src/library.d.ts",
+      "default": "./src/library.js"
+    }
   },
   "peerDependencies": {
     "vite": "^7.3.0"

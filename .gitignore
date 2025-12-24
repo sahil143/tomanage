@@ -57,3 +57,6 @@ mobile/android/.gradle/
 # Rust
 **/target/
 **/*.rs.bk
+
+*storybook.log
+storybook-static

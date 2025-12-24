@@ -18,8 +18,6 @@
     "@react-navigation/native": "^7.1.8",
     "@tanstack/react-query": "^5.90.12",
     "@tomanage/ticktick-sdk": "workspace:*",
-    "@tomanage/shared-types": "workspace:*",
-    "@tomanage/shared-logic": "workspace:*",
     "@tomanage/shared": "workspace:*",
     "@trpc/client": "^11.8.0",
     "@trpc/tanstack-react-query": "^11.8.0",

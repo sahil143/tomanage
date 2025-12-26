@@ -211,6 +211,21 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.18(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      '@tanstack/react-query':
+        specifier: ^5.90.12
+        version: 5.90.12(react@19.2.3)
+      '@tomanage/server':
+        specifier: workspace:^
+        version: link:../server
+      '@tomanage/shared':
+        specifier: workspace:^
+        version: link:../../packages/shared
+      '@trpc/client':
+        specifier: ^11.8.0
+        version: 11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/tanstack-react-query':
+        specifier: ^11.8.0
+        version: 11.8.0(@tanstack/react-query@5.90.12(react@19.2.3))(@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.0(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -7949,6 +7964,11 @@ snapshots:
       '@tanstack/query-core': 5.90.12
       react: 19.1.0
 
+  '@tanstack/react-query@5.90.12(react@19.2.3)':
+    dependencies:
+      '@tanstack/query-core': 5.90.12
+      react: 19.2.3
+
   '@tauri-apps/api@2.9.1': {}
 
   '@tauri-apps/cli-darwin-arm64@2.9.6':
@@ -8018,6 +8038,15 @@ snapshots:
       '@trpc/server': 11.8.0(typescript@5.9.3)
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
+      typescript: 5.9.3
+
+  '@trpc/tanstack-react-query@11.8.0(@tanstack/react-query@5.90.12(react@19.2.3))(@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.0(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)':
+    dependencies:
+      '@tanstack/react-query': 5.90.12(react@19.2.3)
+      '@trpc/client': 11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/server': 11.8.0(typescript@5.9.3)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
       typescript: 5.9.3
 
   '@ts-morph/common@0.27.0':

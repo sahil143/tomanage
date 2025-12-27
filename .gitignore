@@ -60,3 +60,7 @@ mobile/android/.gradle/
 
 *storybook.log
 storybook-static
+
+.expo
+.cursor
+.pnpm-store

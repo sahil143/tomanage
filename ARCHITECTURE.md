@@ -22,9 +22,10 @@ tomanage/
 │   ├── mobile/     # React Native (iOS + Android)
 │   └── server/     # tRPC backend with AI
 └── packages/       # Shared libraries
-    ├── shared-types/   # TypeScript types
-    ├── shared-logic/   # Business logic
-    └── ticktick-sdk/   # TickTick API client
+    ├── shared/         # Shared domain types + helpers + reusable schemas (client/server)
+    ├── eslint-config/  # Shared ESLint flat-config presets (apps + libs)
+    ├── vite-config/    # Shared Vite presets (library mode)
+    └── ticktick-sdk/   # TickTick API client (built with shared Vite preset)
 ```
 
 ## 🏗️ Key Design Decisions
@@ -83,8 +84,7 @@ All shared code lives in `packages/` and uses workspace protocol:
 ```json
 {
   "dependencies": {
-    "@tomanage/shared-types": "workspace:*",
-    "@tomanage/shared-logic": "workspace:*"
+    "@tomanage/shared": "workspace:*"
   }
 }
 ```
@@ -93,6 +93,7 @@ All shared code lives in `packages/` and uses workspace protocol:
 - Type safety across all apps
 - Shared business logic (no duplication)
 - Consistent data structures
+- Shared tRPC input/output schemas reusable on both server and clients
 - Easy to extract to npm packages later
 
 ## 📁 Detailed Structure
@@ -214,7 +215,7 @@ apps/server/
 │   │   ├── anthropic.ts          # Claude AI integration
 │   │   ├── promptBuilder.ts      # AI prompt construction
 │   │   └── storage.ts            # Data persistence
-│   ├── schemas.ts                # Zod validation schemas
+│   ├── schemas.ts                # Re-export of shared Zod schemas (@tomanage/shared/server-schemas)
 │   └── trpc.ts                   # tRPC setup
 └── package.json
 ```
@@ -243,55 +244,34 @@ export const appRouter = router({
 })
 ```
 
-### `packages/shared-types/`
+### `packages/shared/`
 
 ```
-packages/shared-types/
+packages/shared/
 ├── src/
-│   ├── todo.ts                   # Todo interfaces
-│   ├── chat.ts                   # Chat message types
+│   ├── todo.ts                   # Shared Todo types + helpers
+│   ├── chat.ts                   # Shared chat/user-context helpers
+│   ├── todoHelpers.ts            # Shared business logic helpers
+│   ├── reactQueryTrpc.tsx        # Shared tRPC + TanStack React Query wiring (client-side)
+│   ├── server-schemas.ts         # Reusable Zod schemas/types for tRPC inputs/outputs
 │   └── index.ts                  # Barrel exports
 └── package.json
 ```
 
-**Key Types:**
+**Key Exports:**
 ```typescript
-export interface Todo {
-  id: string
-  title: string
-  description?: string
-  completed: boolean
-  priority: 'high' | 'medium' | 'low' | 'none'
-  dueDate?: Date | string
-  tags: string[]
-  energyRequired?: 'high' | 'medium' | 'low'
-  estimatedDuration?: number
-  urgency?: string
-}
+// Domain types + helpers
+export type { Todo, Priority, EnergyLevel }
+export { sortTodos, getUrgency, getPriorityColor }
 
-export type Priority = 'high' | 'medium' | 'low' | 'none'
+// Shared client wiring (no SSR)
+export function createTrpcReactQuery<AppRouter>()
+
+// Server/client shared Zod schemas (import via subpath)
+import { chatInputSchema, todoSchema } from '@tomanage/shared/server-schemas'
 ```
 
-**Used By:** All apps (web, desktop, mobile, server)
-
-### `packages/shared-logic/`
-
-```
-packages/shared-logic/
-├── src/
-│   ├── todoHelpers.ts            # Todo utilities
-│   └── index.ts
-└── package.json
-```
-
-**Key Functions:**
-```typescript
-export function getPriorityColor(priority: Priority): string
-export function getUrgency(dueDate: Date | string | undefined): string
-export function sortTodos(todos: Todo[]): Todo[]
-```
-
-**Used By:** Web, desktop, mobile (not server - server has its own logic)
+**Used By:** Server + any client app (web/desktop/mobile) via workspace dependency
 
 ### `packages/ticktick-sdk/`
 
@@ -307,6 +287,15 @@ packages/ticktick-sdk/
 ```
 
 **Purpose:** Encapsulated TickTick API client that can be used across all apps or published to npm.
+**Build:** Uses `vite build` (library mode) via the shared preset in `@tomanage/vite-config`.
+
+### `packages/eslint-config/`
+
+Shared ESLint **flat config** presets (Turborepo-style reuse) consumed by apps and packages.
+
+### `packages/vite-config/`
+
+Shared Vite presets (currently focused on **library mode**) used by packages like `ticktick-sdk`.
 
 ## 🔄 Data Flow
 
@@ -453,7 +442,7 @@ expo build:android  # Android .apk/.aab
 
 **1. Define Types (if needed)**
 ```typescript
-// packages/shared-types/src/todo.ts
+// packages/shared/src/todo.ts
 export interface Todo {
   // Add new field
   subtasks?: Subtask[]
@@ -462,7 +451,7 @@ export interface Todo {
 
 **2. Update Shared Logic (if needed)**
 ```typescript
-// packages/shared-logic/src/todoHelpers.ts
+// packages/shared/src/todoHelpers.ts
 export function hasSubtasks(todo: Todo): boolean {
   return (todo.subtasks?.length ?? 0) > 0
 }
@@ -481,14 +470,14 @@ createTodo: publicProcedure
 **4. Update Web UI**
 ```typescript
 // apps/web/src/components/TodoItem.tsx
-import { hasSubtasks } from '@tomanage/shared-logic'
+import { hasSubtasks } from '@tomanage/shared'
 // Implement UI
 ```
 
 **5. Update Mobile UI**
 ```typescript
 // apps/mobile/src/components/TodoItem.tsx
-import { hasSubtasks } from '@tomanage/shared-logic'
+import { hasSubtasks } from '@tomanage/shared'
 // Implement UI (different from web)
 ```
 
@@ -558,8 +547,8 @@ pnpm build:packages
 - Web + desktop share code
 - Mobile is separate but uses shared packages
 - Server is the single source of truth for data
-- Types are defined once in shared-types
-- Business logic in shared-logic (when reusable)
+- Shared domain types + helpers live in `@tomanage/shared`
+- Reusable Zod schemas/types for tRPC inputs/outputs live in `@tomanage/shared/server-schemas`
 
 ---
 

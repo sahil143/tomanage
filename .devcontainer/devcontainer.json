@@ -1,0 +1,45 @@
+{
+  "name": "ToManage Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  "postCreateCommand": "pnpm install && pnpm build",
+
+  "forwardPorts": [
+    3001, // Backend server
+    1420, // Web app
+    5173 // Vite dev server (alternative)
+  ],
+
+  "portsAttributes": {
+    "3001": {
+      "label": "Backend Server",
+      "onAutoForward": "notify"
+    },
+    "1420": {
+      "label": "Web App",
+      "onAutoForward": "openBrowser"
+    },
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "remoteEnv": {
+    "NODE_ENV": "development"
+  },
+
+  "mounts": [
+    "source=${localWorkspaceFolder}/.env,target=${containerWorkspaceFolder}/.env,type=bind,consistency=cached"
+  ],
+
+  "remoteUser": "node"
+}

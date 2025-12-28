@@ -1,0 +1,9 @@
+# Allow tracking of workspace settings
+!settings.json
+!extensions.json
+!launch.json
+!tasks.json
+
+# But exclude user-specific files
+*.code-workspace
+.history/

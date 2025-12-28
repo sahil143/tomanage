@@ -2,8 +2,8 @@ import { Link, useMatchRoute, useRouterState } from "@tanstack/react-router";
 import {
   AppWindowIcon,
   ChevronRightIcon,
-  FileTextIcon,
-  SendIcon,
+  ListTodo,
+  MessageSquare,
   SettingsIcon
 } from "lucide-react";
 import * as React from "react";
@@ -22,6 +22,7 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 type NavItem = {
   label: "Chat" | "Tasks" | "Settings";
@@ -30,8 +31,8 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { label: "Chat", to: "/chat", Icon: SendIcon },
-  { label: "Tasks", to: "/tasks", Icon: FileTextIcon },
+  { label: "Tasks", to: "/tasks", Icon: ListTodo },
+  { label: "Chat", to: "/chat", Icon: MessageSquare },
   { label: "Settings", to: "/settings", Icon: SettingsIcon },
 ];
 
@@ -107,8 +108,8 @@ export function Page({ children }: { children: React.ReactNode }) {
 
       <SidebarInset className="bg-background">
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-          <Separator orientation="vertical" className="mx-1 h-4" />
+          <SidebarTrigger className="md:flex hidden" />
+          <Separator orientation="vertical" className="mx-1 h-4 md:block hidden" />
           <nav className="flex items-center gap-1 text-sm text-muted-foreground">
             <span className="hidden md:inline">ToManage</span>
             <ChevronRightIcon className="size-4 hidden md:inline" />
@@ -117,8 +118,12 @@ export function Page({ children }: { children: React.ReactNode }) {
             </span>
           </nav>
         </header>
-        <main className="flex flex-1 flex-col p-6">{children}</main>
+        <main className="flex flex-1 flex-col p-4 md:p-6 pb-20 md:pb-6">
+          {children}
+        </main>
       </SidebarInset>
+
+      <BottomNav />
     </SidebarProvider>
   );
 }
